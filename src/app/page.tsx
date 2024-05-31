@@ -12,7 +12,7 @@ import imageError from '../assets/images/error.png';
 export default function Home() {
   const [page, setPage] = useState(10);
 
-  const itemsPerPage = useMemo(() => 10, []);
+  const itemsPerPage = useMemo(() => 5, []);
 
   const { data, error, isLoading } = useQuery({
     queryFn: fetchNews,
