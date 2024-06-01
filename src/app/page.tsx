@@ -4,19 +4,26 @@ import { Separator } from '@/components/ui/separator';
 import { NewsData } from '@/interfaces/news';
 import { fetchNews } from '@/processes/news';
 import { useQuery } from '@tanstack/react-query';
-import { useCallback, useState } from 'react';
+import { useCallback } from 'react';
 import { Button } from '@/components/ui/button';
+import { useDispatch, useSelector } from 'react-redux';
+import { getNewsFilterForm, pageChanged } from '@/reducers/newsFilterForm';
 import NewsSkeleton from './_components/NewsSkeleton';
 import ErrorStatus from './_components/ErrorStatus';
 import NewsFilterDrawer from './_components/NewsFilterDrawer';
 
 export default function Home() {
-  const [page, setPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(5);
+  const dispatch = useDispatch();
+
+  const {
+    busca, de, ate, qtd, page,
+  } = useSelector(getNewsFilterForm);
 
   const { data, error, isLoading } = useQuery({
     queryFn: fetchNews,
-    queryKey: ['news', { qtd: itemsPerPage, page }],
+    queryKey: ['news', {
+      busca, de, ate, qtd, page,
+    }],
   });
 
   const onNewsDetailClick = useCallback((item: NewsData) => () => {
@@ -24,19 +31,21 @@ export default function Home() {
   }, []);
 
   const onNextNewsClick = useCallback(() => {
-    setPage((prev) => prev + 1);
-  }, []);
+    dispatch(pageChanged({ page: page + 1 }));
+    window.scrollTo(0, 0);
+  }, [dispatch, page]);
 
   const onPreviousNewsClick = useCallback(() => {
-    setPage((prev) => prev - 1);
-  }, []);
+    dispatch(pageChanged({ page: page - 1 }));
+    window.scrollTo(0, 0);
+  }, [dispatch, page]);
 
   const renderSkeleton = useCallback((_: any, index: number) => (
     <NewsSkeleton key={`SKELETON_${index}`} />
   ), []);
 
   const renderItem = useCallback((item: NewsData, index: number) => {
-    const { image_intro } = JSON.parse(item.imagens);
+    const { image_intro } = item.imagens && JSON.parse(item.imagens);
 
     return (
       <div key={`NEWS_${item.id}`}>
@@ -60,10 +69,10 @@ export default function Home() {
           </div>
         </div>
 
-        {index < (itemsPerPage - 1) && <Separator className="mb-8" />}
+        {index < (qtd - 1) && <Separator className="mb-8" />}
       </div>
     );
-  }, [itemsPerPage, onNewsDetailClick]);
+  }, [qtd, onNewsDetailClick]);
 
   if (error) {
     return <ErrorStatus />;
