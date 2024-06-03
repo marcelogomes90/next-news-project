@@ -11,9 +11,7 @@ const INITIAL_STATE = {
 const newsFilterFormSlice = createSlice({
   initialState: INITIAL_STATE,
   reducers: {
-    filterFormChanged: (state, action) => {
-      Object.assign(state, action.payload);
-    },
+    filterFormChanged: (state, action) => ({ ...state, ...action.payload }),
     pageChanged: (state, action) => ({ ...state, page: action.payload.page }),
   },
   name: 'newsFilterForm',

@@ -8,10 +8,10 @@ interface ProviderProps {
 }
 
 export default function QueryClientProvider({ children }: ProviderProps) {
-  const [client] = useState(new QueryClient());
+  const [queryClient] = useState(new QueryClient());
 
   return (
-    <QueryProvider client={client}>
+    <QueryProvider client={queryClient}>
       {children}
     </QueryProvider>
   );

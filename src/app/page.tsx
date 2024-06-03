@@ -1,6 +1,5 @@
 'use client';
 
-import { Separator } from '@/components/ui/separator';
 import { NewsData } from '@/interfaces/news';
 import { fetchNews } from '@/processes/news';
 import { useQuery } from '@tanstack/react-query';
@@ -11,6 +10,8 @@ import { getNewsFilterForm, pageChanged } from '@/reducers/newsFilterForm';
 import NewsSkeleton from './_components/NewsSkeleton';
 import ErrorStatus from './_components/ErrorStatus';
 import NewsFilterDrawer from './_components/NewsFilterDrawer';
+import EmptyState from './_components/EmptyState';
+import NewsItem from './_components/NewsItem';
 
 export default function Home() {
   const dispatch = useDispatch();
@@ -19,16 +20,14 @@ export default function Home() {
     busca, de, ate, qtd, page,
   } = useSelector(getNewsFilterForm);
 
-  const { data, error, isLoading } = useQuery({
+  const {
+    data: newsList, error, isLoading,
+  } = useQuery({
     queryFn: fetchNews,
     queryKey: ['news', {
-      busca, de, ate, qtd, page,
+      busca, de, ate, qtd, page, introsize: 1500,
     }],
   });
-
-  const onNewsDetailClick = useCallback((item: NewsData) => () => {
-
-  }, []);
 
   const onNextNewsClick = useCallback(() => {
     dispatch(pageChanged({ page: page + 1 }));
@@ -44,35 +43,15 @@ export default function Home() {
     <NewsSkeleton key={`SKELETON_${index}`} />
   ), []);
 
-  const renderItem = useCallback((item: NewsData, index: number) => {
-    const { image_intro } = item.imagens && JSON.parse(item.imagens);
+  const renderEmptyState = useCallback(() => (
+    <EmptyState />
+  ), []);
 
-    return (
-      <div key={`NEWS_${item.id}`}>
-        <div className="mb-8 flex justify-between items-center gap-4">
-          <img
-            src={`https://agenciadenoticias.ibge.gov.br/${image_intro}`}
-            alt="imagem da intro"
-            width={250}
-            height={150}
-            className="rounded-md"
-          />
-
-          <div className="flex-col">
-            <h2 className="text-xl font-semibold mb-2">{item.titulo}</h2>
-            <p>{item.introducao}</p>
-
-            <div className="mt-2 flex gap-2 items-center">
-              <span className="text-xs text-muted-foreground">{item.data_publicacao}</span>
-              <Button variant="link" onClick={() => onNewsDetailClick(item)}>Ver matéria completa</Button>
-            </div>
-          </div>
-        </div>
-
-        {index < (qtd - 1) && <Separator className="mb-8" />}
-      </div>
-    );
-  }, [qtd, onNewsDetailClick]);
+  const renderItem = useCallback((item: NewsData, index: number) => (
+    <div key={`ITEM_${item.id}`}>
+      <NewsItem item={item} index={index} ate={ate} busca={busca} de={de} page={page} qtd={qtd} />
+    </div>
+  ), [ate, busca, de, page, qtd]);
 
   if (error) {
     return <ErrorStatus />;
@@ -90,14 +69,14 @@ export default function Home() {
           Array.from({ length: 5 }).map(renderSkeleton)
         ) : (
           <div>
-            {data?.items.map(renderItem)}
+            {newsList?.items.length ? newsList?.items.map(renderItem) : renderEmptyState()}
 
             <div className="flex justify-center gap-4">
-              <Button disabled={data?.page === 1} onClick={onPreviousNewsClick}>
+              <Button disabled={newsList?.page === 1} onClick={onPreviousNewsClick}>
                 Anterior
               </Button>
 
-              <Button disabled={data?.page === data?.totalPages} onClick={onNextNewsClick}>
+              <Button disabled={newsList?.page === newsList?.totalPages} onClick={onNextNewsClick}>
                 Próxima
               </Button>
             </div>
