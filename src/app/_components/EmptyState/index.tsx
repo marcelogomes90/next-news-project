@@ -1,15 +1,18 @@
+import Image from 'next/image';
 import emptyState from '../../../assets/images/emptystate.png';
 
 export default function EmptyState() {
   return (
-    <div className="m-10 flex flex-col items-center gap-4">
-      <img
-        src={emptyState.src}
-        width={300}
-        height={300}
-        alt="emtpy state"
+    <div className="my-12 rounded-2xl border border-dashed border-border bg-card/70 px-6 py-10 text-center">
+      <Image
+        src={emptyState}
+        width={260}
+        height={260}
+        alt="Nenhuma noticia encontrada"
+        className="mx-auto"
       />
-      <h1 className="text-xl font-semibold text-center">Nenhuma notícia encontrada</h1>
+      <h2 className="mt-3 text-xl font-semibold text-foreground">Nenhuma noticia encontrada</h2>
+      <p className="mt-1 text-sm text-muted-foreground">Ajuste os filtros para ampliar a busca.</p>
     </div>
   );
 }

@@ -1,97 +1,114 @@
+'use client';
+
+import { useEffect } from 'react';
+import { MixerVerticalIcon } from '@radix-ui/react-icons';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
-  Sheet, SheetClose, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger,
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
 } from '@/components/ui/sheet';
-import { MixerVerticalIcon } from '@radix-ui/react-icons';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { NEWS_FILTER_FORM_SCHEMA, NewsFilterForm } from '@/constants/schemas';
-import { useDispatch } from 'react-redux';
-import { filterFormChanged } from '@/reducers/newsFilterForm';
-import { useCallback } from 'react';
+import { NewsFilterValues } from '@/interfaces/news';
 
-export default function NewsFilterDrawer() {
-  const dispatch = useDispatch();
+interface NewsFilterDrawerProps {
+  filters: NewsFilterValues;
+  onApplyFilters: (values: NewsFilterValues) => void;
+  onClearFilters: () => void;
+}
 
+export default function NewsFilterDrawer({
+  filters,
+  onApplyFilters,
+  onClearFilters,
+}: NewsFilterDrawerProps) {
   const {
-    register, handleSubmit, formState: { errors, dirtyFields }, reset,
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
   } = useForm<NewsFilterForm>({
     mode: 'onChange',
     resolver: zodResolver(NEWS_FILTER_FORM_SCHEMA),
+    defaultValues: filters,
   });
 
-  const onSubmit = (data: NewsFilterForm) => {
-    const filterData = {
-      busca: data.busca || undefined,
-      de: data.de || undefined,
-      ate: data.ate || undefined,
-      qtd: data.qtd || 5,
-      page: 1,
-    };
+  useEffect(() => {
+    reset(filters);
+  }, [filters, reset]);
 
-    dispatch(filterFormChanged(filterData));
+  const onSubmit = (data: NewsFilterForm) => {
+    onApplyFilters({
+      busca: data.busca ?? '',
+      de: data.de ?? '',
+      ate: data.ate ?? '',
+      qtd: data.qtd ?? 6,
+      page: 1,
+    });
   };
 
-  const onClearFiltersClick = useCallback(() => {
-    reset();
-  }, [reset]);
+  const onClearClick = () => {
+    reset({
+      busca: '',
+      de: '',
+      ate: '',
+      qtd: 6,
+    });
+    onClearFilters();
+  };
 
   return (
     <Sheet>
       <SheetTrigger asChild>
         <Button variant="outline">
-          Filtrar notícias
+          Filtrar noticias
           <MixerVerticalIcon className="ml-2 h-4 w-4" />
         </Button>
       </SheetTrigger>
 
-      <SheetContent side="right">
+      <SheetContent side="right" className="w-[92vw] sm:max-w-md">
         <SheetHeader className="mb-4">
-          <SheetTitle>Filtrar Notícias</SheetTitle>
-
-          <SheetDescription>
-            Selecione os filtros que deseja e clique em filtrar para realizar a busca.
-          </SheetDescription>
+          <SheetTitle>Filtrar noticias</SheetTitle>
+          <SheetDescription>Defina termo, periodo e quantidade por pagina.</SheetDescription>
         </SheetHeader>
 
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <div className="mb-3">
-            <Label>Termo</Label>
-            <Input className="mt-1" {...register('busca')} />
-            {errors.busca && <span className="text-xs text-red-500">{errors.busca.message}</span>}
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <div>
+            <Label htmlFor="busca">Termo</Label>
+            <Input id="busca" className="mt-1" placeholder="Ex.: censo" {...register('busca')} />
+            {errors.busca && <span className="text-xs text-destructive">{errors.busca.message}</span>}
           </div>
 
-          <div className="mb-3">
-            <Label>Data Inicial</Label>
-            <Input type="date" onKeyDown={(e) => e.preventDefault()} className="mt-1" {...register('de')} />
-            {errors.de && <span className="text-xs text-red-500">{errors.de.message}</span>}
+          <div>
+            <Label htmlFor="de">Data inicial</Label>
+            <Input id="de" type="date" onKeyDown={(e) => e.preventDefault()} className="mt-1" {...register('de')} />
+            {errors.de && <span className="text-xs text-destructive">{errors.de.message}</span>}
           </div>
 
-          <div className="mb-3">
-            <Label>Data Final</Label>
-            <Input type="date" onKeyDown={(e) => e.preventDefault()} className="mt-1" {...register('ate')} />
-            {errors.ate && <span className="text-xs text-red-500">{errors.ate.message}</span>}
+          <div>
+            <Label htmlFor="ate">Data final</Label>
+            <Input id="ate" type="date" onKeyDown={(e) => e.preventDefault()} className="mt-1" {...register('ate')} />
+            {errors.ate && <span className="text-xs text-destructive">{errors.ate.message}</span>}
           </div>
 
-          <div className="mb-3">
-            <Label>Quantidade de itens por página</Label>
-            <Input type="number" className="mt-1" {...register('qtd')} />
-            {errors.qtd && <span className="text-xs text-red-500">{errors.qtd.message}</span>}
+          <div>
+            <Label htmlFor="qtd">Itens por pagina</Label>
+            <Input id="qtd" type="number" min={1} max={50} className="mt-1" {...register('qtd')} />
+            {errors.qtd && <span className="text-xs text-destructive">{errors.qtd.message}</span>}
           </div>
 
-          <div className="flex flex-row justify-end mt-10 gap-2">
-            <Button
-              disabled={!Object.keys(dirtyFields).length}
-              type="button"
-              variant="outline"
-              onClick={onClearFiltersClick}
-            >
-              Limpar Filtros
-            </Button>
+          <div className="mt-8 flex justify-end gap-2">
+            <Button type="button" variant="outline" onClick={onClearClick}>Limpar</Button>
             <SheetClose asChild>
-              <Button type="submit">Filtrar</Button>
+              <Button type="submit">Aplicar filtros</Button>
             </SheetClose>
           </div>
         </form>

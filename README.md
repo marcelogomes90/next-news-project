@@ -1,36 +1,83 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Portal de Noticias IBGE
 
-## Getting Started
+Aplicacao em Next.js para listagem e visualizacao de noticias da API publica do IBGE, com filtros por termo, periodo e paginacao.
 
-First, run the development server:
+## Stack
+
+- Next.js 14 (App Router)
+- React 18
+- TypeScript
+- TanStack React Query
+- Tailwind CSS + Radix UI
+- React Hook Form + Zod
+- Vitest (testes unitarios)
+
+## Como rodar
+
+### 1. Requisitos
+
+- Node.js >= 18.20 (recomendado usar a versao do `.nvmrc`)
+- Yarn 1.22+
+
+### 2. Instalar dependencias
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+yarn install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 3. Ambiente de desenvolvimento
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+yarn dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+Aplicacao disponivel em `http://localhost:3000`.
 
-## Learn More
+## Scripts
 
-To learn more about Next.js, take a look at the following resources:
+- `yarn dev`: inicia ambiente de desenvolvimento
+- `yarn build`: gera build de producao
+- `yarn start`: inicia aplicacao em modo producao
+- `yarn lint`: executa lint
+- `yarn test`: executa testes unitarios
+- `yarn test:watch`: executa testes em modo watch
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Testes
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+O projeto possui testes unitarios para regras de negocio e camada de acesso a dados:
 
-## Deploy on Vercel
+- `src/lib/news.test.ts`
+  - parsing e serializacao de filtros
+  - transformacao de params para API
+  - parse seguro de imagem
+  - formatacao de data de publicacao
+- `src/processes/news.test.ts`
+  - contrato de chamadas HTTP para lista
+  - comportamento de detalhe por id para diferentes formatos de resposta
+  - fallback em erro de requisicao
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Rodar todos os testes:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+```bash
+yarn test
+```
+
+## Arquitetura resumida
+
+- `src/app`: paginas e componentes da interface
+- `src/hooks/useNews.ts`: hooks do React Query (lista e detalhe)
+- `src/processes/news.ts`: client HTTP e funcoes de consulta
+- `src/lib/news.ts`: utilitarios de filtros, query params, imagem e data
+- `src/interfaces/news.ts`: tipagens de dominio
+
+### Fluxo de dados
+
+1. A home le filtros da URL (`search params`).
+2. Os filtros sao convertidos em params da API.
+3. React Query busca e cacheia resultados.
+4. Pagina de detalhe usa id da rota e reaproveita dados ja carregados quando possivel.
+
+## Observacoes
+
+- O favicon esta configurado com o arquivo `public/news.png`.
+- Imagens remotas do IBGE estao habilitadas em `next.config.mjs`.
